@@ -77,7 +77,9 @@ export async function POST(
 ): Promise<NextResponse> {
   const suppliedCorrelationId = request.headers.get("x-correlation-id");
   const correlationId =
-    suppliedCorrelationId !== null && suppliedCorrelationId.length <= 128
+    suppliedCorrelationId !== null &&
+    suppliedCorrelationId.trim().length > 0 &&
+    suppliedCorrelationId.length <= 128
       ? suppliedCorrelationId
       : randomUUID();
   const idempotencyKey = request.headers.get("idempotency-key");
