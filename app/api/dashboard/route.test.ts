@@ -4,7 +4,7 @@ import { GET } from "./route";
 
 describe("GET /api/dashboard", () => {
   it("returns a typed fixture snapshot", async () => {
-    const response = GET();
+    const response = await GET();
     const body = await response.json();
 
     expect(body).toMatchObject({

@@ -1,0 +1,19 @@
+import { describe, expect, it } from "vitest";
+
+import { loadConfig } from "./config";
+
+describe("loadConfig", () => {
+  it("uses fixture-safe defaults", () => {
+    expect(loadConfig({})).toMatchObject({
+      authMode: "fixture",
+      dataMode: "fixture",
+      fixtureTenantId: "astra-demo",
+    });
+  });
+
+  it("requires a database URL in postgres mode", () => {
+    expect(() =>
+      loadConfig({ COMMAND_CENTER_DATA_MODE: "postgres" }),
+    ).toThrow("COMMAND_CENTER_DATABASE_URL");
+  });
+});

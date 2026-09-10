@@ -6,8 +6,14 @@ services:
     environment:
       COMMAND_CENTER_AUTH_MODE: fixture
       COMMAND_CENTER_BASE_URL: http://localhost:3000
+      COMMAND_CENTER_DATABASE_MAX_CONNECTIONS: "10"
+      COMMAND_CENTER_DATABASE_URL: postgresql://command_center:command_center@database:5432/command_center
+      COMMAND_CENTER_DATA_MODE: postgres
       COMMAND_CENTER_SESSION_SECRET: local-command-center-secret-change-in-production
       NEXT_TELEMETRY_DISABLED: "1"
+    depends_on:
+      database:
+        condition: service_healthy
     ports:
       - "3000:3000"
     healthcheck:
@@ -20,3 +26,23 @@ services:
       timeout: 3s
       retries: 5
       start_period: 15s
+
+  database:
+    image: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+    environment:
+      POSTGRES_DB: command_center
+      POSTGRES_PASSWORD: command_center
+      POSTGRES_USER: command_center
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U command_center -d command_center
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - command-center-database:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  command-center-database:

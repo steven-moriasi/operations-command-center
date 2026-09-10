@@ -9,6 +9,8 @@
   },
   "scripts": {
     "build": "next build",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
