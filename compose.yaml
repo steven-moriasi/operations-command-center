@@ -1,0 +1,22 @@
+services:
+  command-center:
+    build:
+      context: .
+      target: runtime
+    environment:
+      COMMAND_CENTER_AUTH_MODE: fixture
+      COMMAND_CENTER_BASE_URL: http://localhost:3000
+      COMMAND_CENTER_SESSION_SECRET: local-command-center-secret-change-in-production
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)})
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
