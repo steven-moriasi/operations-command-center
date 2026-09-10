@@ -164,42 +164,78 @@ a {
   letter-spacing: 0.02em;
 }
 
-.operator {
+.topbar-status {
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.operator-card {
   align-items: center;
+  background: rgb(255 255 255 / 72%);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   display: flex;
-  gap: 10px;
+  gap: 14px;
+  padding: 10px 12px;
 }
 
-.operator-copy {
-  text-align: right;
-}
-
-.operator-copy strong,
-.operator-copy span {
+.operator-card strong,
+.operator-card span {
   display: block;
 }
 
-.operator-copy strong {
+.operator-card strong {
   font-size: 0.78rem;
 }
 
-.operator-copy span {
+.operator-card span {
   color: var(--ink-muted);
   font-size: 0.7rem;
   margin-top: 2px;
 }
 
-.avatar {
-  align-items: center;
-  background: var(--brand);
-  border-radius: 50%;
-  color: white;
-  display: flex;
+.secondary-action,
+.execution-action {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--brand);
+  cursor: pointer;
   font-size: 0.72rem;
-  font-weight: 700;
-  height: 36px;
-  justify-content: center;
-  width: 36px;
+  font-weight: 750;
+  padding: 8px 10px;
+}
+
+.execution-action:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.empty-state {
+  background: rgb(255 255 255 / 82%);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  margin: 12vh auto 0;
+  max-width: 620px;
+  padding: 40px;
+}
+
+.empty-state .primary-action {
+  display: inline-block;
+  margin-top: 24px;
+}
+
+.sr-only {
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
 .content {
@@ -344,7 +380,7 @@ h1 {
   border-bottom: 1px solid var(--line);
   display: grid;
   gap: 12px;
-  grid-template-columns: minmax(180px, 1fr) 110px 80px;
+  grid-template-columns: minmax(180px, 1fr) 100px 75px 72px;
   padding: 16px 20px;
 }
 
@@ -363,7 +399,8 @@ h1 {
 }
 
 .execution-name span,
-.execution-time {
+.execution-time,
+.action-unavailable {
   color: var(--ink-muted);
   font-size: 0.68rem;
 }

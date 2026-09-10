@@ -62,15 +62,7 @@ export default function RootLayout({
           <main className="main">
             <header className="topbar">
               <span className="crumbs">Operations / Overview</span>
-              <div className="operator">
-                <div className="operator-copy">
-                  <strong>Platform operator</strong>
-                  <span>Fixture authentication</span>
-                </div>
-                <span aria-hidden="true" className="avatar">
-                  PO
-                </span>
-              </div>
+              <span className="topbar-status">Authenticated workspace</span>
             </header>
             {children}
           </main>
