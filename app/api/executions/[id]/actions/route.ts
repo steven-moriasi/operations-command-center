@@ -14,6 +14,7 @@ import {
 } from "../../../../../lib/auth/principal";
 import { loadConfig } from "../../../../../lib/config";
 import { logOperation } from "../../../../../lib/observability/logging";
+import { recordExecutionAction } from "../../../../../lib/observability/metrics";
 import {
   ExecutionNotFoundError,
   IdempotencyConflictError,
@@ -114,10 +115,15 @@ export async function POST(
       subject: principal.subject,
       tenantId: principal.tenantId,
     });
+    recordExecutionAction(
+      body.action,
+      result.replayed ? "replayed" : "applied",
+    );
     return NextResponse.json(result, {
       headers: { "x-correlation-id": correlationId },
     });
   } catch (error) {
+    recordExecutionAction("request", "rejected");
     logOperation("error", {
       correlationId,
       outcome: error instanceof Error ? error.name : "unknown_error",

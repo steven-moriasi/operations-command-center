@@ -11,6 +11,10 @@ vi.mock("../../../../../lib/observability/logging", () => ({
   logOperation: vi.fn(),
 }));
 
+vi.mock("../../../../../lib/observability/metrics", () => ({
+  recordExecutionAction: vi.fn(),
+}));
+
 import { VersionConflictError } from "../../../../../lib/repositories/errors";
 import { POST } from "./route";
 
