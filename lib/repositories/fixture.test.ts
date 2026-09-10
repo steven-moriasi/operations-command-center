@@ -47,6 +47,15 @@ describe("FixtureOperationsRepository", () => {
     await expect(repository.actOnExecution(request)).resolves.toMatchObject({
       replayed: true,
     });
+    await expect(
+      repository.listAuditEvents("astra-demo", 1),
+    ).resolves.toMatchObject([
+      {
+        action: "execution.retry",
+        actorSubject: "operator-1",
+        resourceId: "run-01J7YN",
+      },
+    ]);
   });
 
   it("rejects conflicting idempotency keys and stale versions", async () => {

@@ -349,6 +349,56 @@ h1 {
   overflow: hidden;
 }
 
+.audit-panel {
+  margin-top: 18px;
+}
+
+.audit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.audit-event {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 20px;
+}
+
+.audit-event:last-child {
+  border-bottom: 0;
+}
+
+.audit-event div:last-child {
+  text-align: right;
+}
+
+.audit-event strong,
+.audit-event span,
+.audit-event time {
+  display: block;
+}
+
+.audit-event strong {
+  font-size: 0.76rem;
+}
+
+.audit-event span,
+.audit-event time {
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+  margin-top: 3px;
+}
+
+.panel-empty {
+  color: var(--ink-muted);
+  font-size: 0.76rem;
+  margin: 0;
+  padding: 20px;
+}
+
 .panel-header {
   align-items: center;
   border-bottom: 1px solid var(--line);

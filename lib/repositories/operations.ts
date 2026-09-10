@@ -1,4 +1,5 @@
 import type {
+  AuditEvent,
   DashboardSnapshot,
   ExecutionActionRequest,
   ExecutionActionResult,
@@ -14,5 +15,6 @@ export interface OperationsRepository {
     tenantId: string,
     executionId: string,
   ): Promise<ExecutionDetail | null>;
+  listAuditEvents(tenantId: string, limit: number): Promise<AuditEvent[]>;
   ready(): Promise<void>;
 }

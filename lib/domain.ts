@@ -51,6 +51,18 @@ export interface ExecutionActionRequest {
   tenantId: string;
 }
 
+export interface AuditEvent {
+  action: string;
+  actorSubject: string;
+  correlationId: string;
+  createdAt: string;
+  details: Record<string, string | number>;
+  id: string;
+  resourceId: string;
+  resourceType: string;
+  tenantId: string;
+}
+
 export interface OperationalSignal {
   detail: string;
   id: string;

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import type { Principal } from "../lib/auth/types";
 import type {
+  AuditEvent,
   DashboardSnapshot,
   ExecutionAction,
   ExecutionActionResult,
@@ -79,17 +80,24 @@ function executionAction(
 export function OperationsDashboard(): React.JSX.Element {
   const [dashboard, setDashboard] = useState<DashboardSnapshot | null>(null);
   const [principal, setPrincipal] = useState<Principal | null>(null);
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [authRequired, setAuthRequired] = useState(false);
   const [busyExecution, setBusyExecution] = useState<string | null>(null);
   const [message, setMessage] = useState("Loading operations data");
 
   useEffect(() => {
     async function loadDashboard(): Promise<void> {
-      const [dashboardResponse, principalResponse] = await Promise.all([
+      const [dashboardResponse, principalResponse, auditResponse] =
+        await Promise.all([
         fetch("/api/dashboard", { cache: "no-store" }),
         fetch("/api/me", { cache: "no-store" }),
+        fetch("/api/audit?limit=5", { cache: "no-store" }),
       ]);
-      if (dashboardResponse.status === 401 || principalResponse.status === 401) {
+      if (
+        dashboardResponse.status === 401 ||
+        principalResponse.status === 401 ||
+        auditResponse.status === 401
+      ) {
         setAuthRequired(true);
         setMessage("Authentication is required");
         return;
@@ -101,6 +109,9 @@ export function OperationsDashboard(): React.JSX.Element {
 
       setDashboard((await dashboardResponse.json()) as DashboardSnapshot);
       setPrincipal((await principalResponse.json()) as Principal);
+      if (auditResponse.ok) {
+        setAuditEvents((await auditResponse.json()) as AuditEvent[]);
+      }
       setMessage("Operations data loaded");
     }
 
@@ -145,6 +156,23 @@ export function OperationsDashboard(): React.JSX.Element {
             ),
           },
     );
+    setAuditEvents((current) => [
+      {
+        action: `execution.${result.action}`,
+        actorSubject: principal?.subject ?? "current-operator",
+        correlationId: response.headers.get("x-correlation-id") ?? "generated",
+        createdAt: new Date().toISOString(),
+        details: {
+          status: result.execution.status,
+          version: result.execution.version,
+        },
+        id: result.auditEventId,
+        resourceId: result.execution.id,
+        resourceType: "execution",
+        tenantId: result.execution.tenantId,
+      },
+      ...current.filter((event) => event.id !== result.auditEventId),
+    ]);
     setBusyExecution(null);
     setMessage(
       result.replayed
@@ -305,6 +333,35 @@ export function OperationsDashboard(): React.JSX.Element {
           </ul>
         </section>
       </div>
+
+      <section aria-labelledby="audit-events" className="panel audit-panel">
+        <header className="panel-header">
+          <h2 id="audit-events">Audit trail</h2>
+          <span className="text-action">Tenant scoped</span>
+        </header>
+        {auditEvents.length === 0 ? (
+          <p className="panel-empty">No workflow actions recorded.</p>
+        ) : (
+          <ul className="audit-list">
+            {auditEvents.map((event) => (
+              <li className="audit-event" key={event.id}>
+                <div>
+                  <strong>{event.action}</strong>
+                  <span>
+                    {event.resourceType} · {event.resourceId}
+                  </span>
+                </div>
+                <div>
+                  <strong>{event.actorSubject}</strong>
+                  <time dateTime={event.createdAt}>
+                    {new Date(event.createdAt).toLocaleString()}
+                  </time>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

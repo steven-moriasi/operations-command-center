@@ -7,6 +7,7 @@ import {
   fixtureWorkflows,
 } from "../data/fixture-store";
 import type {
+  AuditEvent,
   ExecutionActionRequest,
   ExecutionActionResult,
   ExecutionDetail,
@@ -31,6 +32,7 @@ export class FixtureOperationsRepository implements OperationsRepository {
   private readonly executions = fixtureExecutions.map((execution) => ({
     ...execution,
   }));
+  private readonly auditEvents: AuditEvent[] = [];
 
   async actOnExecution(
     request: ExecutionActionRequest,
@@ -69,12 +71,28 @@ export class FixtureOperationsRepository implements OperationsRepository {
       version: execution.version + 1,
     });
 
+    const auditEventId = randomUUID();
     const result: ExecutionActionResult = {
       action: request.action,
-      auditEventId: randomUUID(),
+      auditEventId,
       execution: { ...storedExecution },
       replayed: false,
     };
+    this.auditEvents.unshift({
+      action: `execution.${request.action}`,
+      actorSubject: request.actorSubject,
+      correlationId: request.correlationId,
+      createdAt: new Date().toISOString(),
+      details: {
+        attempt: storedExecution.attempt,
+        status: storedExecution.status,
+        version: storedExecution.version,
+      },
+      id: auditEventId,
+      resourceId: request.executionId,
+      resourceType: "execution",
+      tenantId: request.tenantId,
+    });
     this.actionResults.set(idempotencyKey, { fingerprint, result });
     return result;
   }
@@ -105,5 +123,15 @@ export class FixtureOperationsRepository implements OperationsRepository {
 
   async ready(): Promise<void> {
     return Promise.resolve();
+  }
+
+  async listAuditEvents(
+    tenantId: string,
+    limit: number,
+  ): Promise<AuditEvent[]> {
+    return this.auditEvents
+      .filter((event) => event.tenantId === tenantId)
+      .slice(0, limit)
+      .map((event) => ({ ...event, details: { ...event.details } }));
   }
 }

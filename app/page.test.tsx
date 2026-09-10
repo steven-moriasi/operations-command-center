@@ -35,6 +35,7 @@ describe("OverviewPage", () => {
       .fn()
       .mockResolvedValueOnce(response(dashboard))
       .mockResolvedValueOnce(response(principal))
+      .mockResolvedValueOnce(response([]))
       .mockResolvedValueOnce(
         response({
           action: "retry",
@@ -62,6 +63,9 @@ describe("OverviewPage", () => {
     expect(
       screen.getByRole("region", { name: "Operational metrics" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Audit trail" }),
+    ).toBeInTheDocument();
 
     const executions = screen
       .getByRole("heading", { name: "Recent executions" })
@@ -83,6 +87,7 @@ describe("OverviewPage", () => {
       ),
     );
     expect(await screen.findByText("Queued")).toBeInTheDocument();
+    expect(await screen.findByText("execution.retry")).toBeInTheDocument();
   });
 
   it("offers Identity Gateway sign-in for unauthenticated operators", async () => {

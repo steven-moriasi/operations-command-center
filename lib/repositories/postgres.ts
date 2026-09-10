@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import type { CommandCenterConfig } from "../config";
 import type {
+  AuditEvent,
   ExecutionActionRequest,
   ExecutionActionResult,
   ExecutionDetail,
@@ -43,6 +44,18 @@ interface ExecutionDetailRow extends ExecutionRow {
 interface IdempotencyRow extends QueryResultRow {
   request_fingerprint: string;
   response: unknown;
+}
+
+interface AuditEventRow extends QueryResultRow {
+  action: string;
+  actor_subject: string;
+  correlation_id: string;
+  created_at: Date;
+  details: Record<string, string | number>;
+  id: string;
+  resource_id: string;
+  resource_type: string;
+  tenant_id: string;
 }
 
 interface SignalRow extends QueryResultRow {
@@ -301,6 +314,39 @@ export class PostgresOperationsRepository implements OperationsRepository {
     return result.rowCount === 1
       ? mapExecutionDetail(result.rows[0])
       : null;
+  }
+
+  async listAuditEvents(
+    tenantId: string,
+    limit: number,
+  ): Promise<AuditEvent[]> {
+    const result = await this.pool.query<AuditEventRow>(
+      `SELECT id,
+              tenant_id,
+              actor_subject,
+              action,
+              resource_type,
+              resource_id,
+              correlation_id,
+              details,
+              created_at
+         FROM audit_events
+        WHERE tenant_id = $1
+        ORDER BY created_at DESC
+        LIMIT $2`,
+      [tenantId, limit],
+    );
+    return result.rows.map((row) => ({
+      action: row.action,
+      actorSubject: row.actor_subject,
+      correlationId: row.correlation_id,
+      createdAt: row.created_at.toISOString(),
+      details: row.details,
+      id: row.id,
+      resourceId: row.resource_id,
+      resourceType: row.resource_type,
+      tenantId: row.tenant_id,
+    }));
   }
 }
 
