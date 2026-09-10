@@ -16,6 +16,7 @@ describe("OverviewPage", () => {
     expect(
       screen.getByRole("region", { name: "Operational metrics" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("66.7%")).toBeInTheDocument();
 
     const executions = screen.getByRole("heading", {
       name: "Recent executions",

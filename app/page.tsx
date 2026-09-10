@@ -1,42 +1,62 @@
-const metrics = [
-  { label: "Success rate", trend: "30 day window", value: "99.4%" },
-  { label: "Active workflows", trend: "3 scheduled", value: "24" },
-  { label: "Running now", trend: "Within capacity", value: "7" },
-  { label: "Needs attention", trend: "2 acknowledged", value: "3" },
-];
+import { getFixtureDashboard } from "../lib/services/dashboard";
 
-const executions = [
+const statusLabels = {
+  cancelled: "Cancelled",
+  failed: "Failed",
+  queued: "Queued",
+  running: "Running",
+  succeeded: "Succeeded",
+};
+
+const metricDefinitions = [
   {
-    id: "run-01J7YQ",
-    name: "Finance reconciliation",
-    status: "Succeeded",
-    statusClass: "status-success",
-    time: "2 min ago",
+    format: (value: number) => `${value}%`,
+    key: "successRate",
+    label: "Success rate",
+    trend: "Completed fixture runs",
   },
   {
-    id: "run-01J7YP",
-    name: "Customer onboarding",
-    status: "Running",
-    statusClass: "status-running",
-    time: "4 min ago",
+    format: (value: number) => value.toString(),
+    key: "activeWorkflows",
+    label: "Active workflows",
+    trend: "Local catalogue",
   },
   {
-    id: "run-01J7YN",
-    name: "Supplier document intake",
-    status: "Failed",
-    statusClass: "status-failed",
-    time: "11 min ago",
+    format: (value: number) => value.toString(),
+    key: "runningExecutions",
+    label: "Running now",
+    trend: "Fixture capacity",
   },
   {
-    id: "run-01J7YM",
-    name: "Access review export",
-    status: "Succeeded",
-    statusClass: "status-success",
-    time: "18 min ago",
+    format: (value: number) => value.toString(),
+    key: "failedExecutions",
+    label: "Needs attention",
+    trend: "Failed fixture runs",
   },
-];
+] as const;
+
+const statusClasses = {
+  cancelled: "status-failed",
+  failed: "status-failed",
+  queued: "status-running",
+  running: "status-running",
+  succeeded: "status-success",
+};
+
+function formatRelativeTime(timestamp: string, generatedAt: string): string {
+  const elapsedMinutes = Math.max(
+    0,
+    Math.round(
+      (Date.parse(generatedAt) - Date.parse(timestamp)) / (60 * 1000),
+    ),
+  );
+
+  return `${elapsedMinutes} min ago`;
+}
 
 export default function OverviewPage(): React.JSX.Element {
+  const dashboard = getFixtureDashboard();
+
   return (
     <div className="content">
       <section className="page-heading">
@@ -54,12 +74,14 @@ export default function OverviewPage(): React.JSX.Element {
       </section>
 
       <section aria-label="Operational metrics" className="metrics">
-        {metrics.map((metric) => (
-          <article className="metric" key={metric.label}>
-            <span className="metric-label">{metric.label}</span>
+        {metricDefinitions.map((definition) => (
+          <article className="metric" key={definition.key}>
+            <span className="metric-label">{definition.label}</span>
             <div className="metric-row">
-              <strong className="metric-value">{metric.value}</strong>
-              <span className="metric-trend">{metric.trend}</span>
+              <strong className="metric-value">
+                {definition.format(dashboard.metrics[definition.key])}
+              </strong>
+              <span className="metric-trend">{definition.trend}</span>
             </div>
           </article>
         ))}
@@ -74,16 +96,20 @@ export default function OverviewPage(): React.JSX.Element {
             </a>
           </header>
           <ul className="execution-list">
-            {executions.map((execution) => (
+            {dashboard.executions.map((execution) => (
               <li className="execution" key={execution.id}>
                 <div className="execution-name">
-                  <strong>{execution.name}</strong>
+                  <strong>{execution.workflowName}</strong>
                   <span>{execution.id}</span>
                 </div>
-                <span className={`status ${execution.statusClass}`}>
-                  {execution.status}
+                <span
+                  className={`status ${statusClasses[execution.status]}`}
+                >
+                  {statusLabels[execution.status]}
                 </span>
-                <span className="execution-time">{execution.time}</span>
+                <span className="execution-time">
+                  {formatRelativeTime(execution.startedAt, dashboard.generatedAt)}
+                </span>
               </li>
             ))}
           </ul>
@@ -95,18 +121,17 @@ export default function OverviewPage(): React.JSX.Element {
             <span className="text-action">Live</span>
           </header>
           <ul className="signal-list">
-            <li className="signal signal-attention">
-              <strong>Supplier intake retrying</strong>
-              <span>Upstream returned 429. Next attempt in 42 seconds.</span>
-            </li>
-            <li className="signal">
-              <strong>Worker capacity healthy</strong>
-              <span>7 of 40 execution slots currently in use.</span>
-            </li>
-            <li className="signal">
-              <strong>Audit delivery current</strong>
-              <span>No pending records outside the delivery objective.</span>
-            </li>
+            {dashboard.signals.map((signal) => (
+              <li
+                className={`signal ${
+                  signal.level === "attention" ? "signal-attention" : ""
+                }`}
+                key={signal.id}
+              >
+                <strong>{signal.title}</strong>
+                <span>{signal.detail}</span>
+              </li>
+            ))}
           </ul>
         </section>
       </div>
