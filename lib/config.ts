@@ -8,6 +8,10 @@ const configurationSchema = z
     databaseUrl: z.string().optional(),
     dataMode: z.enum(["fixture", "postgres"]).default("fixture"),
     fixtureTenantId: z.string().min(1).default("astra-demo"),
+    oidcAudience: z.string().min(1).optional(),
+    oidcClientId: z.string().min(1).optional(),
+    oidcIssuer: z.url().optional(),
+    sessionSecret: z.string().min(32).optional(),
   })
   .superRefine((configuration, context) => {
     if (
@@ -19,6 +23,23 @@ const configurationSchema = z
         message: "COMMAND_CENTER_DATABASE_URL is required in postgres mode",
         path: ["databaseUrl"],
       });
+    }
+
+    if (configuration.authMode === "oidc") {
+      for (const key of [
+        "oidcAudience",
+        "oidcClientId",
+        "oidcIssuer",
+        "sessionSecret",
+      ] as const) {
+        if (configuration[key] === undefined) {
+          context.addIssue({
+            code: "custom",
+            message: `${key} is required in OIDC mode`,
+            path: [key],
+          });
+        }
+      }
     }
   });
 
@@ -35,5 +56,9 @@ export function loadConfig(
     databaseUrl: environment.COMMAND_CENTER_DATABASE_URL,
     dataMode: environment.COMMAND_CENTER_DATA_MODE,
     fixtureTenantId: environment.COMMAND_CENTER_FIXTURE_TENANT_ID,
+    oidcAudience: environment.COMMAND_CENTER_OIDC_AUDIENCE,
+    oidcClientId: environment.COMMAND_CENTER_OIDC_CLIENT_ID,
+    oidcIssuer: environment.COMMAND_CENTER_OIDC_ISSUER,
+    sessionSecret: environment.COMMAND_CENTER_SESSION_SECRET,
   });
 }

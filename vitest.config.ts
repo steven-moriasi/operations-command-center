@@ -13,7 +13,7 @@ export default defineConfig({
         statements: 80,
       },
     },
-    environment: "jsdom",
+    environment: "node",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
   },
