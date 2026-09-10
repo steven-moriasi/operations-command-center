@@ -1,5 +1,5 @@
 import type {
-  ExecutionSummary,
+  ExecutionDetail,
   OperationalSignal,
   WorkflowSummary,
 } from "../domain";
@@ -37,8 +37,10 @@ export const fixtureWorkflows: WorkflowSummary[] = [
   },
 ];
 
-export const fixtureExecutions: ExecutionSummary[] = [
+export const fixtureExecutions: ExecutionDetail[] = [
   {
+    attempt: 1,
+    failureReason: null,
     finishedAt: "2026-09-09T11:58:20.000Z",
     id: "run-01J7YQ",
     startedAt: "2026-09-09T11:56:00.000Z",
@@ -49,6 +51,8 @@ export const fixtureExecutions: ExecutionSummary[] = [
     workflowName: "Finance reconciliation",
   },
   {
+    attempt: 1,
+    failureReason: null,
     finishedAt: null,
     id: "run-01J7YP",
     startedAt: "2026-09-09T11:54:00.000Z",
@@ -59,6 +63,8 @@ export const fixtureExecutions: ExecutionSummary[] = [
     workflowName: "Customer onboarding",
   },
   {
+    attempt: 2,
+    failureReason: "Local upstream fixture returned HTTP 429",
     finishedAt: "2026-09-09T11:51:18.000Z",
     id: "run-01J7YN",
     startedAt: "2026-09-09T11:49:00.000Z",
@@ -69,6 +75,8 @@ export const fixtureExecutions: ExecutionSummary[] = [
     workflowName: "Supplier document intake",
   },
   {
+    attempt: 1,
+    failureReason: null,
     finishedAt: "2026-09-09T11:43:41.000Z",
     id: "run-01J7YM",
     startedAt: "2026-09-09T11:42:00.000Z",

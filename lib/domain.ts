@@ -27,6 +27,30 @@ export interface ExecutionSummary {
   workflowName: string;
 }
 
+export type ExecutionAction = "cancel" | "retry";
+
+export interface ExecutionDetail extends ExecutionSummary {
+  attempt: number;
+  failureReason: string | null;
+}
+
+export interface ExecutionActionResult {
+  action: ExecutionAction;
+  auditEventId: string;
+  execution: ExecutionDetail;
+  replayed: boolean;
+}
+
+export interface ExecutionActionRequest {
+  action: ExecutionAction;
+  actorSubject: string;
+  correlationId: string;
+  executionId: string;
+  expectedVersion: number;
+  idempotencyKey: string;
+  tenantId: string;
+}
+
 export interface OperationalSignal {
   detail: string;
   id: string;
