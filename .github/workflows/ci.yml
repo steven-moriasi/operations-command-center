@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.22.2
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - run: npm run build
+      - run: npm audit --audit-level=moderate
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          push: false
+          tags: operations-command-center:test
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Validate Compose
+        run: docker compose config --quiet
+      - name: Start command center
+        run: docker compose up -d --build --wait --wait-timeout 180
+      - name: Verify workflow controls and audit
+        run: |
+          curl --fail --silent --show-error http://localhost:3000/api/health
+          curl --fail --silent --show-error http://localhost:3000/api/ready
+          curl --fail --silent --show-error http://localhost:3000/api/dashboard |
+            jq -e '.source == "database" and (.executions | length == 4)'
+          curl --fail --silent --show-error \
+            --request POST \
+            --header 'content-type: application/json' \
+            --header 'idempotency-key: ci-retry-supplier-intake' \
+            --data '{"action":"retry","expectedVersion":3}' \
+            http://localhost:3000/api/executions/run-01J7YN/actions |
+            jq -e '.execution.status == "queued" and .execution.version == 4 and .replayed == false'
+          curl --fail --silent --show-error \
+            --request POST \
+            --header 'content-type: application/json' \
+            --header 'idempotency-key: ci-retry-supplier-intake' \
+            --data '{"action":"retry","expectedVersion":3}' \
+            http://localhost:3000/api/executions/run-01J7YN/actions |
+            jq -e '.replayed == true'
+          curl --fail --silent --show-error http://localhost:3000/api/audit |
+            jq -e '.[0].action == "execution.retry"'
+          curl --fail --silent --show-error http://localhost:3000/api/metrics |
+            grep -q command_center_execution_actions_total
+      - name: Collect service logs
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop command center
+        if: always()
+        run: docker compose down --volumes
