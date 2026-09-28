@@ -1,6 +1,6 @@
 # Operations Command Center
 
-A portfolio reference implementation of an authenticated console for monitoring and controlling
+A reference implementation of an authenticated console for monitoring and controlling
 automation workflows. It combines a Next.js interface and backend-for-frontend, typed TypeScript
 APIs, PostgreSQL persistence, OIDC Authorization Code with PKCE, role/scope/tenant authorization,
 idempotent workflow actions, audit records, and operational telemetry.
@@ -107,8 +107,6 @@ idempotent replay, audit persistence, and metrics behavior.
 - `docs/OPERATIONS.md` — runbook, alerts, recovery, deployment, and rollback
 - `docs/THREAT_MODEL.md` — assets, adversaries, controls, and open risks
 - `docs/ACCESSIBILITY.md` — interface contract and verification evidence
-- `docs/PORTFOLIO_EVIDENCE.md` — claims mapped to implementation
-- `docs/PRINCIPAL_ENGINEER_REVIEW.md` — candid technical assessment
 - `docs/ROADMAP.md` — work required beyond this lab
 
 ## Limitations

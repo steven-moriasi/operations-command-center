@@ -5,7 +5,7 @@
 
 ## Context
 
-Portfolio review benefits from a zero-infrastructure mode, while operational behavior requires
+Local evaluation benefits from a zero-infrastructure mode, while operational behavior requires
 durable database evidence. Silent fallback from a failed database to local fixtures would make a
 degraded console appear healthy and could mislead operators.
 
