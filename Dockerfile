@@ -1,4 +1,4 @@
-FROM node:26.8-bookworm-slim@sha256:cd9f682fa2885cd1056e830424764158570061c59736a1da836bc3d73df095ae AS dependencies
+FROM node:26.11-bookworm-slim@sha256:86f07bc9c5dce4578cf37e5a418b7bfc7f817cda25cde66e2b66e95ed86c4567 AS dependencies
 
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -9,7 +9,7 @@ FROM dependencies AS build
 COPY . .
 RUN npm run build
 
-FROM node:26.8-bookworm-slim@sha256:cd9f682fa2885cd1056e830424764158570061c59736a1da836bc3d73df095ae AS runtime
+FROM node:26.11-bookworm-slim@sha256:86f07bc9c5dce4578cf37e5a418b7bfc7f817cda25cde66e2b66e95ed86c4567 AS runtime
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
